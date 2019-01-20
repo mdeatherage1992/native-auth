@@ -1,0 +1,4 @@
+# index.json.jbuilder (using jbuilder gem)
+json.array! @users do |appointment|
+  json.extract! :user, :id, :name, :password
+end
