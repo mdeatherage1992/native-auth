@@ -1,7 +1,6 @@
 import React,{Component} from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, Card,Header,ListItem } from 'react-native-elements';
-import { Stack, Router, Scene } from 'react-native-router-flux';
 import LoginScreen from './Login';
 import RegisterScreen from './Register';
 import {navigate} from 'react-navigate';
