@@ -1,16 +1,75 @@
 import React,{Component} from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { FormLabel, FormInput, FormValidationMessage } from 'react-native-elements'
+import { StyleSheet, Text, View,TextInput } from 'react-native';
 import { Button, Card,Header,ListItem } from 'react-native-elements';
 import {navigate} from 'react-navigate';
+import GenerateForm from 'react-native-form-builder';
+import { Url } from './credentials';
+import { connect } from 'react-redux';
+import { authSuccess } from './redux/action/AuthSuccess'
+import Auth from './redux/reducer/auth';
+
+const fields = [
+  {
+    type: 'text',
+    name: 'user_name',
+    required: true,
+    icon: 'ios-person',
+    label: 'Username',
+  },
+  {
+    type: 'password',
+    name: 'password',
+    icon: 'ios-lock',
+    required: true,
+    label: 'Password',
+  },
+];
 
 class RegisterScreen extends Component {
-  constructor() {
-    super();
-    this.state = {
-      data: []
-    }
+  signup() {
+    const formValues = this.formGenerator.getValues();
+    this.newUser(formValues.user_name, formValues.password)
   }
+
+  newUser(email,password){
+    var self = this;
+    var credentials = {'email':email,'password':password}
+    fetch("http://localhost:3000/api/v1/auth",{
+      headers: Object.assign(Url.headers,credentials),
+      method: "POST",
+    })
+    .then(response => {
+      console.log(response)
+      self.validateToken(response)
+    })
+    .catch(err => {
+      console.log(err)
+    })
+  }
+
+  validateToken(response) {
+    const {navigate} = this.props.navigation;
+    var self = this;
+    var accessToken = {
+      "access-token":response.headers['map']['access-token'],
+      "client": response.headers['map'].client,
+      "uid": response.headers['map'].uid
+  }
+  console.log(accessToken)
+  fetch(Url.validate_token,{
+    headers:Object.assign(Url.headers,accessToken)})
+    .then(response => {
+      authSuccess(response,accessToken)
+      if(response.status === 200) {
+        alert("Success!")
+        navigate('Home')
+      } else {
+        alert("Try Again")
+      }
+    })
+}
+
+
 
   render() {
     const {navigate} = this.props.navigation;
@@ -34,11 +93,27 @@ class RegisterScreen extends Component {
            onPress={() => navigate('Register')}
          ></Button>
          />
-      <Text>This is Forms</Text>
-      </View>
+
+      <Text>This is Login</Text>
+      <View>
+       <GenerateForm
+         ref={(c) => {
+           this.formGenerator = c;
+         }}
+         fields={fields}
+       />
+     </View>
+     <View style={styles.submitButton}>
+       <Button block onPress={() => this.signup()}>
+         <Text>Login</Text>
+       </Button>
+     </View>
+    </View>
     )
   }
 }
+
+
 const styles = StyleSheet.create({
   container: {
   },
